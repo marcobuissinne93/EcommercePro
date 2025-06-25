@@ -1,0 +1,60 @@
+I'd like you to help me build a fullstack e-commerce demo platform in Replit. The app will be used to demonstrate how insurance products can be embedded into an online store using Root Platform's API.
+
+Here are the full specifications:
+
+📦 App Purpose:
+This is a proof-of-concept site that sells mobile devices (phones, tablets, laptops) and allows users to add optional insurance products at the point of sale. The insurance must be integrated via Root Platform’s APIs.
+
+🧰 Tech Stack:
+- Frontend: React (Vite) with TailwindCSS
+- Backend: Node.js with Express
+- Root API integration via Axios
+- Replit-hosted (single repo fullstack app)
+
+🛍️ Functionality Requirements:
+
+1. **Product Catalog**
+   - Display a few mock mobile devices (3–6 products with name, price, image)
+   - User can add products to cart
+
+2. **Extended Warranty**
+   - On each product page, show two checkboxes:
+     - Add 5-year extended warranty
+     - Add 10-year extended warranty
+   - Only one should be selectable at a time
+
+3. **Device Insurance Modal**
+   - Include a button labeled “Add Device Insurance”
+   - On click, open a modal with:
+     - Radio buttons to choose one:
+       - Comprehensive
+       - Theft Only
+       - Accidental Damage
+     - Checkbox: “I accept the terms of the policy”
+     - “Add Insurance” button disabled unless terms are accepted
+   - Save this selection to the cart along with the product
+
+4. **Checkout Page**
+   - Show cart summary: items, warranty, insurance
+   - Collect the user’s billing address:
+     - Full Name, Email, Address, Postal Code, Country
+   - On clicking “Place Order”:
+     - Call Root Platform APIs to:
+       - Generate a quote for the selected device and insurance
+       - Create a policy using Root's `/policies` endpoint
+       - Send the user's billing address and consent
+     - Store the full order in memory or simple mock DB
+
+5. **API Integration**
+   - Use environment variables to store `ROOT_API_KEY` and `ROOT_BASE_URL`
+   - Backend endpoints:
+     - `POST /quote`: takes selected cover and product info, calls Root for quote
+     - `POST /policy`: sends billing + insurance info to create policy
+     - `GET /products`: returns the mock catalog
+
+6. **Styling**
+   - Use TailwindCSS for responsive design
+   - Optional: use shadcn/ui or Headless UI for modal and buttons
+
+Please create the folder structure, install dependencies, and scaffold both frontend and backend. You can use mock data for products and simulate the Root API responses with dummy JSON for now.
+
