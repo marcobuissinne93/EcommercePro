@@ -1,7 +1,13 @@
 import type { OrderItem } from "@shared/schema";
+import sgMail from '@sendgrid/mail';
 
 // Email service for sending insurance payment links
 export class EmailService {
+  constructor() {
+    if (process.env.SENDGRID_API_KEY) {
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    }
+  }
   private generatePaymentLink(deviceName: string, insuranceType: string, monthlyAmount: number): string {
     // Generate a mock payment link (in production, this would integrate with a payment gateway)
     const encodedDeviceName = encodeURIComponent(deviceName);
@@ -127,26 +133,42 @@ export class EmailService {
         return { success: true, message: "No insurance items to process" };
       }
 
-      // In production, this would integrate with SendGrid or similar email service
-      // For demo purposes, we'll simulate the email sending
-      console.log(`\n📧 ===== INSURANCE PAYMENT EMAIL SENT =====`);
-      console.log(`📮 To: ${customerEmail}`);
-      console.log(`👤 Customer: ${customerName}`);
-      console.log(`📱 Insurance Items: ${orderItems.filter(item => item.insurance).length}`);
-      console.log(`📝 Subject: ${emailContent.subject}`);
-      console.log(`\n✉️ Email Content (HTML):`);
-      console.log(emailContent.html);
-      console.log(`\n📄 Email Content (Text):`);
-      console.log(emailContent.text);
-      console.log(`\n✅ Demo: In production, this would be sent via SendGrid API`);
-      console.log(`==============================================\n`);
+      if (process.env.SENDGRID_API_KEY) {
+        // Send real email via SendGrid
+        const msg = {
+          to: customerEmail,
+          from: 'noreply@techstore.co.za', // Use your verified sender
+          subject: emailContent.subject,
+          text: emailContent.text,
+          html: emailContent.html,
+        };
 
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+          await sgMail.send(msg);
+          console.log(`📧 Insurance email sent successfully to ${customerEmail}`);
+        } catch (error) {
+          console.error('SendGrid email sending failed:', error);
+          throw new Error('Failed to send email via SendGrid');
+        }
+      } else {
+        // Demo mode - log email content to console
+        console.log(`\n📧 ===== INSURANCE PAYMENT EMAIL (DEMO MODE) =====`);
+        console.log(`📮 To: ${customerEmail}`);
+        console.log(`👤 Customer: ${customerName}`);
+        console.log(`📱 Insurance Items: ${orderItems.filter(item => item.insurance).length}`);
+        console.log(`📝 Subject: ${emailContent.subject}`);
+        console.log(`\n✉️ Email Content (HTML):`);
+        console.log(emailContent.html);
+        console.log(`\n📄 Email Content (Text):`);
+        console.log(emailContent.text);
+        console.log(`\n⚠️ No SENDGRID_API_KEY found - running in demo mode`);
+        console.log(`================================================\n`);
+      }
 
+      const mode = process.env.SENDGRID_API_KEY ? "sent" : "logged (demo mode)";
       return {
         success: true,
-        message: `Insurance payment links sent to ${customerEmail} via email`
+        message: `Insurance payment links ${mode} to ${customerEmail} via email`
       };
     } catch (error) {
       console.error("Email sending failed:", error);
