@@ -88,11 +88,10 @@ This is a fullstack e-commerce demo platform designed to showcase how insurance 
 ## Recent Changes
 ```
 ✓ June 25, 2025 - Initial setup with product catalog and cart functionality
-✓ June 25, 2025 - Implemented WhatsApp insurance payment link system
-✓ June 25, 2025 - Enhanced South African phone number validation with mobile network prefixes
-✓ June 25, 2025 - Added real-time phone formatting and auto +27 prefix
+✓ June 25, 2025 - Implemented email insurance payment link system with HTML templates
+✓ June 25, 2025 - Replaced WhatsApp with professional email notifications
 ✓ June 25, 2025 - Separated insurance costs from cart total (debit order approach)
-✓ June 25, 2025 - Enhanced WhatsApp message formatting with payment links
+✓ June 25, 2025 - Enhanced email templates with professional HTML formatting
 ```
 
 ## User Preferences

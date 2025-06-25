@@ -19,15 +19,7 @@ import { api } from "@/lib/api";
 const checkoutSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   email: z.string().email("Valid email is required"),
-  phone: z.string()
-    .min(12, "Phone number must include +27 country code")
-    .regex(/^\+27[0-9]{9}$/, "Phone number must be in format +27xxxxxxxxx")
-    .refine((phone) => {
-      // Validate South African mobile prefixes (after +27)
-      const number = phone.replace('+27', '');
-      const validPrefixes = ['60', '61', '62', '63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74', '76', '78', '79', '81', '82', '83', '84'];
-      return validPrefixes.some(prefix => number.startsWith(prefix));
-    }, "Please enter a valid South African mobile number (+27 6x, 7x, or 8x)"),
+  phone: z.string().min(10, "Phone number is required"),
   address: z.string().min(5, "Address is required"),
   postalCode: z.string().min(4, "Postal code is required"),
   country: z.string().min(1, "Country is required"),
@@ -58,7 +50,7 @@ export default function Checkout() {
     defaultValues: {
       fullName: "",
       email: "",
-      phone: "+27",
+      phone: "",
       address: "",
       postalCode: "",
       country: "ZA",
@@ -97,15 +89,15 @@ export default function Checkout() {
       clearCart();
       const hasInsurance = items.some(item => item.insurance);
       
-      if (hasInsurance && order.whatsappSent) {
+      if (hasInsurance && order.emailSent) {
         toast({
           title: "Order Placed Successfully!",
-          description: `Order #${order.id} created. WhatsApp message with insurance payment links sent to ${data.phone}. Check your WhatsApp to complete debit order setup.`,
+          description: `Order #${order.id} created. Insurance payment links sent to ${data.email}. Check your email to complete setup.`,
         });
       } else if (hasInsurance) {
         toast({
           title: "Order Placed Successfully!",
-          description: `Order #${order.id} created. Unable to send WhatsApp message. Please contact support to complete insurance setup.`,
+          description: `Order #${order.id} created. Unable to send email. Please contact support to complete insurance setup.`,
         });
       } else {
         toast({
@@ -197,31 +189,13 @@ export default function Checkout() {
                   <Input
                     id="phone"
                     type="tel"
-                    {...form.register("phone", {
-                      onChange: (e) => {
-                        let value = e.target.value;
-                        // Auto-format: ensure +27 prefix
-                        if (value && !value.startsWith('+27')) {
-                          if (value.startsWith('27')) {
-                            value = '+' + value;
-                          } else if (value.startsWith('0')) {
-                            value = '+27' + value.substring(1);
-                          } else if (value.match(/^[6-8]/)) {
-                            value = '+27' + value;
-                          }
-                          e.target.value = value;
-                        }
-                      }
-                    })}
-                    placeholder="+27812345678"
-                    maxLength={12}
+                    {...form.register("phone")}
+                    placeholder="Enter your phone number"
                   />
                   {form.formState.errors.phone && (
                     <p className="text-sm text-red-500">{form.formState.errors.phone.message}</p>
                   )}
-                  <p className="text-xs text-slate-600">
-                    South African mobile number required (Vodacom, MTN, Cell C, Telkom)
-                  </p>
+                  <p className="text-xs text-slate-600">Required for order confirmation</p>
                 </div>
 
                 <div className="space-y-2">
@@ -338,7 +312,7 @@ export default function Checkout() {
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Insurance:</span>
                   <span>
-                    {getInsuranceTotal() > 0 ? "Setup via WhatsApp" : "None selected"}
+                    {getInsuranceTotal() > 0 ? "Setup via email" : "None selected"}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">

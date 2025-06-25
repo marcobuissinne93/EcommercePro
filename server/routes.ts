@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertOrderSchema, insertClaimSchema, type RootQuoteRequest, type RootPolicyRequest } from "@shared/schema";
-import { whatsappService } from "./whatsapp";
+import { emailService } from "./email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all products
@@ -184,28 +184,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update order with policy IDs
       const updatedOrder = await storage.updateOrderStatus(order.id, "completed", policyIds);
       
-      // Send WhatsApp message for insurance payment links
+      // Send email with insurance payment links
       const orderInsuranceItems = order.items.filter(item => item.insurance);
-      let whatsappResult = null;
+      let emailResult = null;
       
       if (orderInsuranceItems.length > 0) {
-        whatsappResult = await whatsappService.sendInsurancePaymentLinks(
+        emailResult = await emailService.sendInsurancePaymentLinks(
           order.fullName,
-          order.phone,
+          order.email,
           order.items
         );
         
-        if (whatsappResult.success) {
-          console.log(`✅ WhatsApp delivery: ${whatsappResult.message}`);
+        if (emailResult.success) {
+          console.log(`✅ Email delivery: ${emailResult.message}`);
         } else {
-          console.error(`❌ WhatsApp delivery failed: ${whatsappResult.message}`);
+          console.error(`❌ Email delivery failed: ${emailResult.message}`);
         }
       }
       
       res.status(201).json({
         ...updatedOrder || order,
-        whatsappSent: whatsappResult?.success || false,
-        whatsappMessage: whatsappResult?.message || null
+        emailSent: emailResult?.success || false,
+        emailMessage: emailResult?.message || null
       });
     } catch (error) {
       console.error("Order creation failed:", error);
