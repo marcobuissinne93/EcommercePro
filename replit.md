@@ -92,6 +92,8 @@ This is a fullstack e-commerce demo platform designed to showcase how insurance 
 ✓ June 25, 2025 - Replaced WhatsApp with professional email notifications
 ✓ June 25, 2025 - Separated insurance costs from cart total (debit order approach)
 ✓ June 25, 2025 - Enhanced email templates with professional HTML formatting
+✓ June 25, 2025 - Moved insurance selection from product cards to checkout cart
+✓ June 25, 2025 - Updated all pricing to display VAT inclusive amounts
 ```
 
 ## User Preferences

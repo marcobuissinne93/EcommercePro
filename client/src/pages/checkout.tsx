@@ -70,8 +70,8 @@ export default function Checkout() {
         subtotal: getSubtotal(),
         warrantyTotal: getWarrantyTotal(),
         insuranceTotal: getInsuranceTotal(),
-        vat: getVAT(),
-        total: getTotal(),
+        vat: Math.round((getSubtotal() + getWarrantyTotal()) * 0.15),
+        total: Math.round((getSubtotal() + getWarrantyTotal()) * 1.15),
         items: items.map(item => ({
           productId: item.productId,
           name: item.name,

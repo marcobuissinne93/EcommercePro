@@ -82,8 +82,7 @@ export const useCartStore = create<CartStore>()(
       getTotal: () => {
         const subtotal = get().getSubtotal();
         const warrantyTotal = get().getWarrantyTotal();
-        const vat = get().getVAT();
-        return subtotal + warrantyTotal + vat;
+        return Math.round((subtotal + warrantyTotal) * 1.15);
       },
       
       getInsuranceItems: () => {

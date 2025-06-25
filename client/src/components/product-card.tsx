@@ -10,7 +10,6 @@ import type { Product } from "@shared/schema";
 
 interface ProductCardProps {
   product: Product;
-  onInsuranceClick: (productId: number) => void;
 }
 
 const formatCurrency = (cents: number) => {
@@ -33,7 +32,7 @@ const getBadgeColor = (badge: string) => {
   return colors[badge] || "bg-gray-500";
 };
 
-export function ProductCard({ product, onInsuranceClick }: ProductCardProps) {
+export function ProductCard({ product }: ProductCardProps) {
   const [selectedWarranty, setSelectedWarranty] = useState<string>("");
   const [isAdding, setIsAdding] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
