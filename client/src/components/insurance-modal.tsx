@@ -99,7 +99,7 @@ export function InsuranceModal({ open, onOpenChange, product }: InsuranceModalPr
                   <div className="font-medium text-slate-900">{option.name}</div>
                   <div className="text-sm text-slate-600">{option.description}</div>
                   <div className="text-sm font-medium text-blue-600">
-                    +{formatCurrency(option.price)}/month
+                    {formatCurrency(option.price)}/month via debit order
                   </div>
                 </Label>
               </div>

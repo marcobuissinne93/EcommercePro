@@ -14,6 +14,7 @@ interface CartStore {
   getInsuranceTotal: () => number;
   getVAT: () => number;
   getTotal: () => number;
+  getInsuranceItems: () => CartItem[];
 }
 
 export const useCartStore = create<CartStore>()(
@@ -83,6 +84,10 @@ export const useCartStore = create<CartStore>()(
         const warrantyTotal = get().getWarrantyTotal();
         const vat = get().getVAT();
         return subtotal + warrantyTotal + vat;
+      },
+      
+      getInsuranceItems: () => {
+        return get().items.filter(item => item.insurance);
       },
     }),
     {

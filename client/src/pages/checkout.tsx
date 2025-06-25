@@ -19,6 +19,7 @@ import { api } from "@/lib/api";
 const checkoutSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   email: z.string().email("Valid email is required"),
+  phone: z.string().min(10, "Phone number is required for WhatsApp notifications"),
   address: z.string().min(5, "Address is required"),
   postalCode: z.string().min(4, "Postal code is required"),
   country: z.string().min(1, "Country is required"),
@@ -49,6 +50,7 @@ export default function Checkout() {
     defaultValues: {
       fullName: "",
       email: "",
+      phone: "",
       address: "",
       postalCode: "",
       country: "ZA",
@@ -61,6 +63,7 @@ export default function Checkout() {
       const orderData = {
         fullName: data.fullName,
         email: data.email,
+        phone: data.phone,
         address: data.address,
         postalCode: data.postalCode,
         country: data.country,
@@ -74,9 +77,9 @@ export default function Checkout() {
           name: item.name,
           price: item.price,
           image: item.image,
-          warranty: item.warranty,
-          insurance: item.insurance,
-        })),
+          warranty: item.warranty || undefined,
+          insurance: item.insurance || undefined,
+        })) as any,
       };
 
       const response = await api.createOrder(orderData);
@@ -84,10 +87,24 @@ export default function Checkout() {
     },
     onSuccess: (order) => {
       clearCart();
-      toast({
-        title: "Order Placed Successfully!",
-        description: `Order #${order.id} has been created. Insurance policies have been set up through Root Platform.`,
-      });
+      const hasInsurance = items.some(item => item.insurance);
+      
+      if (hasInsurance && order.whatsappSent) {
+        toast({
+          title: "Order Placed Successfully!",
+          description: `Order #${order.id} created. Insurance payment links sent to your WhatsApp. Check your messages to complete setup.`,
+        });
+      } else if (hasInsurance) {
+        toast({
+          title: "Order Placed Successfully!",
+          description: `Order #${order.id} created. Please contact support to complete insurance setup.`,
+        });
+      } else {
+        toast({
+          title: "Order Placed Successfully!",
+          description: `Order #${order.id} has been created successfully.`,
+        });
+      }
       setLocation("/");
     },
     onError: (error) => {
@@ -165,6 +182,20 @@ export default function Checkout() {
                   {form.formState.errors.email && (
                     <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
                   )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    {...form.register("phone")}
+                    placeholder="Enter your WhatsApp number (+27...)"
+                  />
+                  {form.formState.errors.phone && (
+                    <p className="text-sm text-red-500">{form.formState.errors.phone.message}</p>
+                  )}
+                  <p className="text-xs text-slate-600">Required for insurance payment link delivery via WhatsApp</p>
                 </div>
 
                 <div className="space-y-2">
@@ -281,7 +312,7 @@ export default function Checkout() {
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Insurance:</span>
                   <span>
-                    {getInsuranceTotal() > 0 ? `${formatCurrency(getInsuranceTotal())}/month` : formatCurrency(0)}
+                    {getInsuranceTotal() > 0 ? "Setup via WhatsApp" : "None selected"}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">

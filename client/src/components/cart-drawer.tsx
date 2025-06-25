@@ -49,7 +49,7 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
                       )}
                       {item.insurance && (
                         <p className="text-xs text-green-600">
-                          + {item.insurance.type} insurance ({formatCurrency(item.insurance.price)}/month)
+                          + {item.insurance.type} insurance (WhatsApp payment link will be sent)
                         </p>
                       )}
                     </div>
