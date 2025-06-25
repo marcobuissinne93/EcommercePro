@@ -95,8 +95,9 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
             )}
             <span className="text-2xl font-bold text-slate-900">
-              {formatCurrency(product.price)}
+              {formatCurrency(Math.round(product.price * 1.15))}
             </span>
+            <span className="text-xs text-slate-500 ml-2">VAT incl.</span>
           </div>
           <div className="flex items-center text-yellow-400">
             <Star className="w-4 h-4 fill-current" />
@@ -113,34 +114,25 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="5-year" id={`warranty-5-${product.id}`} />
               <Label htmlFor={`warranty-5-${product.id}`} className="text-sm">
-                5-year warranty (+{formatCurrency(calculate5YearWarranty())})
+                5-year warranty (+{formatCurrency(Math.round(calculate5YearWarranty() * 1.15))} VAT incl.)
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="10-year" id={`warranty-10-${product.id}`} />
               <Label htmlFor={`warranty-10-${product.id}`} className="text-sm">
-                10-year warranty (+{formatCurrency(calculate10YearWarranty())})
+                10-year warranty (+{formatCurrency(Math.round(calculate10YearWarranty() * 1.15))} VAT incl.)
               </Label>
             </div>
           </RadioGroup>
         </div>
 
-        <div className="space-y-2">
-          <Button 
-            onClick={handleAddToCart}
-            className="w-full bg-blue-600 text-white hover:bg-blue-700"
-            disabled={isAdding}
-          >
-            {isAdding ? "Added!" : "Add to Cart"}
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => onInsuranceClick(product.id)}
-            className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"
-          >
-            Add Device Insurance
-          </Button>
-        </div>
+        <Button 
+          onClick={handleAddToCart}
+          className="w-full bg-blue-600 text-white hover:bg-blue-700"
+          disabled={isAdding}
+        >
+          {isAdding ? "Added!" : "Add to Cart"}
+        </Button>
       </CardContent>
     </Card>
   );

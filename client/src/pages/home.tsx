@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/header";
 import { ProductCard } from "@/components/product-card";
 import { CartDrawer } from "@/components/cart-drawer";
-import { InsuranceModal } from "@/components/insurance-modal";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -13,20 +12,13 @@ import type { Product } from "@shared/schema";
 export default function Home() {
   const [, setLocation] = useLocation();
   const [cartOpen, setCartOpen] = useState(false);
-  const [insuranceModalOpen, setInsuranceModalOpen] = useState(false);
-  const [selectedProductForInsurance, setSelectedProductForInsurance] = useState<Product | null>(null);
+
 
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
-  const handleInsuranceClick = (productId: number) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      setSelectedProductForInsurance(product);
-      setInsuranceModalOpen(true);
-    }
-  };
+
 
   const handleCheckout = () => {
     setLocation("/checkout");
@@ -159,11 +151,7 @@ export default function Home() {
         onCheckout={handleCheckout}
       />
 
-      <InsuranceModal
-        open={insuranceModalOpen}
-        onOpenChange={setInsuranceModalOpen}
-        product={selectedProductForInsurance}
-      />
+
     </div>
   );
 }

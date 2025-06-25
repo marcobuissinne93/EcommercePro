@@ -290,9 +290,9 @@ export default function Checkout() {
                       )}
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">{formatCurrency(item.price)}</div>
+                      <div className="font-medium">{formatCurrency(Math.round(item.price * 1.15))}</div>
                       {item.warranty && (
-                        <div className="text-sm text-slate-600">+{formatCurrency(item.warranty.price)}</div>
+                        <div className="text-sm text-slate-600">+{formatCurrency(Math.round(item.warranty.price * 1.15))}</div>
                       )}
                       {item.insurance && (
                         <div className="text-sm text-slate-600">+{formatCurrency(item.insurance.price)}/mo</div>

@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Trash2, ShoppingCart } from "lucide-react";
+import { Trash2, ShoppingCart, Shield } from "lucide-react";
 import { useCartStore } from "@/lib/cart-store";
+import { InsuranceModal } from "@/components/insurance-modal";
+import { useState } from "react";
+import type { Product } from "@shared/schema";
 
 interface CartDrawerProps {
   open: boolean;
@@ -14,7 +17,23 @@ const formatCurrency = (cents: number) => {
 };
 
 export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) {
-  const { items, removeItem, getTotal } = useCartStore();
+  const { items, removeItem, getSubtotal, getWarrantyTotal, getTotal } = useCartStore();
+  const [insuranceModalOpen, setInsuranceModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const handleInsuranceClick = (productId: number, productName: string) => {
+    const mockProduct: Product = {
+      id: productId,
+      name: productName,
+      description: "",
+      price: 0,
+      image: "",
+      imei: "",
+      purchaseDate: null
+    };
+    setSelectedProduct(mockProduct);
+    setInsuranceModalOpen(true);
+  };
 
   const handleCheckout = () => {
     onOpenChange(false);
@@ -41,16 +60,28 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
                   <div key={item.id} className="flex items-center justify-between p-4 border-b">
                     <div className="flex-1">
                       <h4 className="font-medium text-slate-900">{item.name}</h4>
-                      <p className="text-sm text-slate-600">{formatCurrency(item.price)}</p>
+                      <p className="text-sm text-slate-600">{formatCurrency(Math.round(item.price * 1.15))} VAT incl.</p>
                       {item.warranty && (
                         <p className="text-xs text-blue-600">
-                          + {item.warranty.type} warranty ({formatCurrency(item.warranty.price)})
+                          + {item.warranty.type} warranty ({formatCurrency(Math.round(item.warranty.price * 1.15))} VAT incl.)
                         </p>
                       )}
                       {item.insurance && (
                         <p className="text-xs text-green-600">
                           + {item.insurance.type} insurance (email payment link will be sent)
                         </p>
+                      )}
+                      
+                      {!item.insurance && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleInsuranceClick(item.productId, item.name)}
+                          className="text-xs text-green-600 hover:text-green-700 p-0 h-5 mt-1"
+                        >
+                          <Shield className="w-3 h-3 mr-1" />
+                          Add Device Insurance
+                        </Button>
                       )}
                     </div>
                     <Button
@@ -66,11 +97,15 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
               </div>
 
               <div className="border-t pt-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-medium text-slate-900">Total:</span>
-                  <span className="text-2xl font-bold text-slate-900">
-                    {formatCurrency(getTotal())}
-                  </span>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Subtotal (VAT incl.):</span>
+                    <span>{formatCurrency(Math.round((getSubtotal() + getWarrantyTotal()) * 1.15))}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg border-t pt-2">
+                    <span>Total:</span>
+                    <span>{formatCurrency(Math.round((getSubtotal() + getWarrantyTotal()) * 1.15))}</span>
+                  </div>
                 </div>
                 <Button 
                   onClick={handleCheckout}
@@ -82,6 +117,12 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
               </div>
             </>
           )}
+
+          <InsuranceModal
+            open={insuranceModalOpen}
+            onOpenChange={setInsuranceModalOpen}
+            product={selectedProduct}
+          />
         </div>
       </SheetContent>
     </Sheet>
