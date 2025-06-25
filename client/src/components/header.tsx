@@ -1,7 +1,8 @@
 import { Link } from "wouter";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useCartStore } from "@/lib/cart-store";
 
 interface HeaderProps {
@@ -26,10 +27,30 @@ export function Header({ onCartClick }: HeaderProps) {
           <div className="flex items-center space-x-4">
             <nav className="hidden md:flex space-x-8">
               <Link href="/">
-                <a className="text-slate-700 hover:text-blue-600 font-medium">Products</a>
+                <span className="text-slate-700 hover:text-blue-600 font-medium cursor-pointer">Products</span>
               </Link>
-              <a href="#" className="text-slate-700 hover:text-blue-600 font-medium">Insurance</a>
-              <a href="#" className="text-slate-700 hover:text-blue-600 font-medium">Support</a>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-slate-700 hover:text-blue-600 font-medium p-0 h-auto">
+                    Insurance
+                    <ChevronDown className="w-4 h-4 ml-1" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" className="w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href="/claims">
+                      <span className="cursor-pointer">Submit Claim</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span>Coverage Options</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <span>Claims Status</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <span className="text-slate-700 hover:text-blue-600 font-medium cursor-pointer">Support</span>
             </nav>
             <Button
               variant="ghost"

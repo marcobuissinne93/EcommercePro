@@ -1,28 +1,38 @@
-import { products, orders, type Product, type InsertProduct, type Order, type InsertOrder } from "@shared/schema";
+import { products, orders, claims, type Product, type InsertProduct, type Order, type InsertOrder, type Claim, type InsertClaim } from "@shared/schema";
 
 export interface IStorage {
   // Products
   getProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
+  getProductByImei(imei: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   
   // Orders
   createOrder(order: InsertOrder): Promise<Order>;
   getOrder(id: number): Promise<Order | undefined>;
   updateOrderStatus(id: number, status: string, rootPolicyIds?: string[]): Promise<Order | undefined>;
+  
+  // Claims
+  createClaim(claim: InsertClaim): Promise<Claim>;
+  getClaim(id: number): Promise<Claim | undefined>;
+  getClaims(): Promise<Claim[]>;
 }
 
 export class MemStorage implements IStorage {
   private products: Map<number, Product>;
   private orders: Map<number, Order>;
+  private claims: Map<number, Claim>;
   private currentProductId: number;
   private currentOrderId: number;
+  private currentClaimId: number;
 
   constructor() {
     this.products = new Map();
     this.orders = new Map();
+    this.claims = new Map();
     this.currentProductId = 1;
     this.currentOrderId = 1;
+    this.currentClaimId = 1;
     this.seedProducts();
   }
 
@@ -36,6 +46,8 @@ export class MemStorage implements IStorage {
         category: "smartphone",
         badge: "New",
         rating: "4.8",
+        imei: "351234567890123",
+        purchaseDate: "2024-01-15",
       },
       {
         name: "Galaxy S24 Ultra",
@@ -45,6 +57,8 @@ export class MemStorage implements IStorage {
         category: "smartphone",
         badge: "Hot",
         rating: "4.9",
+        imei: "352345678901234",
+        purchaseDate: "2024-02-10",
       },
       {
         name: "iPad Pro 12.9\"",
@@ -54,6 +68,8 @@ export class MemStorage implements IStorage {
         category: "tablet",
         badge: "Pro",
         rating: "4.7",
+        imei: "353456789012345",
+        purchaseDate: "2024-03-05",
       },
       {
         name: "MacBook Pro 14\"",
@@ -63,6 +79,8 @@ export class MemStorage implements IStorage {
         category: "laptop",
         badge: "M3",
         rating: "4.8",
+        imei: "354567890123456",
+        purchaseDate: "2024-04-20",
       },
       {
         name: "Pixel 8 Pro",
@@ -72,6 +90,8 @@ export class MemStorage implements IStorage {
         category: "smartphone",
         badge: "AI",
         rating: "4.6",
+        imei: "355678901234567",
+        purchaseDate: "2024-05-12",
       },
       {
         name: "Galaxy Tab S9",
@@ -81,6 +101,8 @@ export class MemStorage implements IStorage {
         category: "tablet",
         badge: "5G",
         rating: "4.5",
+        imei: "356789012345678",
+        purchaseDate: "2024-06-08",
       },
       {
         name: "OnePlus 12",
@@ -90,6 +112,8 @@ export class MemStorage implements IStorage {
         category: "smartphone",
         badge: "Fast",
         rating: "4.4",
+        imei: "357890123456789",
+        purchaseDate: "2024-07-15",
       },
       {
         name: "Dell XPS 13",
@@ -99,6 +123,8 @@ export class MemStorage implements IStorage {
         category: "laptop",
         badge: "Ultra",
         rating: "4.6",
+        imei: "358901234567890",
+        purchaseDate: "2024-08-22",
       },
       {
         name: "iPhone 14",
@@ -109,6 +135,8 @@ export class MemStorage implements IStorage {
         category: "smartphone",
         badge: "Sale",
         rating: "4.7",
+        imei: "359012345678901",
+        purchaseDate: "2024-09-10",
       },
       {
         name: "Surface Pro 9",
@@ -118,6 +146,8 @@ export class MemStorage implements IStorage {
         category: "tablet",
         badge: "2-in-1",
         rating: "4.5",
+        imei: "360123456789012",
+        purchaseDate: "2024-10-18",
       },
     ];
 
@@ -134,9 +164,19 @@ export class MemStorage implements IStorage {
     return this.products.get(id);
   }
 
+  async getProductByImei(imei: string): Promise<Product | undefined> {
+    return Array.from(this.products.values()).find(product => product.imei === imei);
+  }
+
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
     const id = this.currentProductId++;
-    const product: Product = { ...insertProduct, id };
+    const product: Product = { 
+      ...insertProduct, 
+      id,
+      badge: insertProduct.badge || null,
+      originalPrice: insertProduct.originalPrice || null,
+      purchaseDate: insertProduct.purchaseDate || null
+    };
     this.products.set(id, product);
     return product;
   }
@@ -169,6 +209,27 @@ export class MemStorage implements IStorage {
     
     this.orders.set(id, updatedOrder);
     return updatedOrder;
+  }
+
+  async createClaim(insertClaim: InsertClaim): Promise<Claim> {
+    const id = this.currentClaimId++;
+    const claim: Claim = {
+      ...insertClaim,
+      id,
+      status: "submitted",
+      createdAt: new Date().toISOString(),
+      customerPhone: insertClaim.customerPhone || null,
+    };
+    this.claims.set(id, claim);
+    return claim;
+  }
+
+  async getClaim(id: number): Promise<Claim | undefined> {
+    return this.claims.get(id);
+  }
+
+  async getClaims(): Promise<Claim[]> {
+    return Array.from(this.claims.values());
   }
 }
 

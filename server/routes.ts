@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertOrderSchema, type RootQuoteRequest, type RootPolicyRequest } from "@shared/schema";
+import { insertOrderSchema, insertClaimSchema, type RootQuoteRequest, type RootPolicyRequest } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all products
@@ -203,6 +203,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(order);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch order" });
+    }
+  });
+
+  // Get product by IMEI
+  app.get("/api/products/imei/:imei", async (req, res) => {
+    try {
+      const imei = req.params.imei;
+      const product = await storage.getProductByImei(imei);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Device not found" });
+      }
+      
+      // Calculate warranty status
+      const purchaseDate = new Date(product.purchaseDate || "");
+      const currentDate = new Date();
+      const monthsSincePurchase = (currentDate.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      
+      const warrantyStatus = {
+        withinManufacturerWarranty: monthsSincePurchase <= 12,
+        withinExtendedWarranty: monthsSincePurchase <= 60, // 5 years for extended
+        monthsSincePurchase: Math.floor(monthsSincePurchase)
+      };
+      
+      res.json({ ...product, warrantyStatus });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch device details" });
+    }
+  });
+
+  // Create claim
+  app.post("/api/claims", async (req, res) => {
+    try {
+      const validatedClaim = insertClaimSchema.parse(req.body);
+      
+      // Verify device exists
+      const device = await storage.getProductByImei(validatedClaim.imei);
+      if (!device) {
+        return res.status(404).json({ message: "Device not found with provided IMEI" });
+      }
+      
+      const claim = await storage.createClaim(validatedClaim);
+      res.status(201).json(claim);
+    } catch (error) {
+      console.error("Claim creation failed:", error);
+      res.status(400).json({ message: "Failed to create claim" });
+    }
+  });
+
+  // Get claims
+  app.get("/api/claims", async (req, res) => {
+    try {
+      const claims = await storage.getClaims();
+      res.json(claims);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch claims" });
     }
   });
 

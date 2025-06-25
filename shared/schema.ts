@@ -12,6 +12,8 @@ export const products = pgTable("products", {
   badge: text("badge"), // "New", "Hot", "Sale", etc.
   rating: decimal("rating", { precision: 2, scale: 1 }).notNull(),
   originalPrice: integer("original_price"), // for sale items
+  imei: text("imei").notNull().unique(), // IMEI number for device tracking
+  purchaseDate: text("purchase_date"), // Date of purchase for warranty tracking
 });
 
 export const orders = pgTable("orders", {
@@ -31,6 +33,18 @@ export const orders = pgTable("orders", {
   rootPolicyIds: json("root_policy_ids").$type<string[]>(),
 });
 
+export const claims = pgTable("claims", {
+  id: serial("id").primaryKey(),
+  imei: text("imei").notNull(),
+  dateOfIncident: text("date_of_incident").notNull(),
+  description: text("description").notNull(),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  status: text("status").notNull().default("submitted"),
+  createdAt: text("created_at").notNull(),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
 });
@@ -41,10 +55,18 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
   rootPolicyIds: true,
 });
 
+export const insertClaimSchema = createInsertSchema(claims).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+});
+
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type Claim = typeof claims.$inferSelect;
+export type InsertClaim = z.infer<typeof insertClaimSchema>;
 
 export interface CartItem {
   id: string;
