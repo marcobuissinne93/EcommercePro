@@ -74,10 +74,10 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
                       
                       {!item.insurance && (
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => handleInsuranceClick(item.productId, item.name)}
-                          className="text-xs text-green-600 hover:text-green-700 p-0 h-5 mt-1"
+                          className="text-xs text-green-700 border-green-600 bg-green-50 hover:bg-green-100 hover:border-green-700 px-3 py-1 h-7 mt-2 font-medium"
                         >
                           <Shield className="w-3 h-3 mr-1" />
                           Add Device Insurance
