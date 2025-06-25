@@ -11,6 +11,15 @@ export class WhatsAppService {
       throw new Error('Phone number must start with +27 for South African numbers');
     }
     
+    // Validate South African mobile prefixes
+    const number = cleanPhone.substring(2); // Remove '27'
+    const validPrefixes = ['60', '61', '62', '63', '64', '65', '66', '67', '68', '69', '70', '71', '72', '73', '74', '76', '78', '79', '81', '82', '83', '84'];
+    const isValidMobile = validPrefixes.some(prefix => number.startsWith(prefix));
+    
+    if (!isValidMobile) {
+      throw new Error('Invalid South African mobile number. Must start with 6x, 7x, or 8x after +27');
+    }
+    
     return cleanPhone;
   }
 
