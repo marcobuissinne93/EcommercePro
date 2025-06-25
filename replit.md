@@ -85,10 +85,13 @@ This is a fullstack e-commerce demo platform designed to showcase how insurance 
 - `ROOT_API_KEY`: Root Platform API authentication
 - `ROOT_BASE_URL`: Root Platform API endpoint
 
-## Changelog
+## Recent Changes
 ```
-Changelog:
-- June 25, 2025. Initial setup
+✓ June 25, 2025 - Initial setup with product catalog and cart functionality
+✓ June 25, 2025 - Implemented WhatsApp insurance payment link system
+✓ June 25, 2025 - Added South African phone number validation (+27 format)
+✓ June 25, 2025 - Separated insurance costs from cart total (debit order approach)
+✓ June 25, 2025 - Enhanced WhatsApp message formatting with payment links
 ```
 
 ## User Preferences

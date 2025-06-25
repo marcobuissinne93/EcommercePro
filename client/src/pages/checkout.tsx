@@ -19,7 +19,9 @@ import { api } from "@/lib/api";
 const checkoutSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
   email: z.string().email("Valid email is required"),
-  phone: z.string().min(10, "Phone number is required for WhatsApp notifications"),
+  phone: z.string()
+    .min(12, "Phone number must include +27 country code")
+    .regex(/^\+27[0-9]{9}$/, "Phone number must be in format +27xxxxxxxxx"),
   address: z.string().min(5, "Address is required"),
   postalCode: z.string().min(4, "Postal code is required"),
   country: z.string().min(1, "Country is required"),
@@ -92,12 +94,12 @@ export default function Checkout() {
       if (hasInsurance && order.whatsappSent) {
         toast({
           title: "Order Placed Successfully!",
-          description: `Order #${order.id} created. Insurance payment links sent to your WhatsApp. Check your messages to complete setup.`,
+          description: `Order #${order.id} created. WhatsApp message with insurance payment links sent to ${data.phone}. Check your WhatsApp to complete debit order setup.`,
         });
       } else if (hasInsurance) {
         toast({
           title: "Order Placed Successfully!",
-          description: `Order #${order.id} created. Please contact support to complete insurance setup.`,
+          description: `Order #${order.id} created. Unable to send WhatsApp message. Please contact support to complete insurance setup.`,
         });
       } else {
         toast({
@@ -190,12 +192,12 @@ export default function Checkout() {
                     id="phone"
                     type="tel"
                     {...form.register("phone")}
-                    placeholder="Enter your WhatsApp number (+27...)"
+                    placeholder="+27812345678"
                   />
                   {form.formState.errors.phone && (
                     <p className="text-sm text-red-500">{form.formState.errors.phone.message}</p>
                   )}
-                  <p className="text-xs text-slate-600">Required for insurance payment link delivery via WhatsApp</p>
+                  <p className="text-xs text-slate-600">South African number starting with +27 required for WhatsApp delivery</p>
                 </div>
 
                 <div className="space-y-2">

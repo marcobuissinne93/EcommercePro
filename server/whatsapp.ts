@@ -3,14 +3,12 @@ import type { OrderItem } from "@shared/schema";
 // WhatsApp message service for sending insurance payment links
 export class WhatsAppService {
   private formatPhoneNumber(phone: string): string {
-    // Remove any non-digit characters
-    const cleanPhone = phone.replace(/\D/g, '');
+    // Remove + and any non-digit characters, but expect +27 format
+    let cleanPhone = phone.replace(/^\+/, '').replace(/\D/g, '');
     
-    // Add South African country code if not present
-    if (cleanPhone.startsWith('0')) {
-      return `27${cleanPhone.substring(1)}`;
-    } else if (!cleanPhone.startsWith('27')) {
-      return `27${cleanPhone}`;
+    // Ensure it starts with 27 (South African code)
+    if (!cleanPhone.startsWith('27')) {
+      throw new Error('Phone number must start with +27 for South African numbers');
     }
     
     return cleanPhone;
@@ -81,7 +79,8 @@ export class WhatsAppService {
 
       return {
         success: true,
-        message: `Insurance payment links sent to +${formattedPhone} via WhatsApp`
+        message: `Insurance payment links sent to +${formattedPhone} via WhatsApp`,
+        whatsappUrl: whatsappWebUrl
       };
     } catch (error) {
       console.error("WhatsApp message sending failed:", error);

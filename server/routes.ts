@@ -196,9 +196,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         );
         
         if (whatsappResult.success) {
-          console.log(`WhatsApp sent: ${whatsappResult.message}`);
+          console.log(`✅ WhatsApp delivery: ${whatsappResult.message}`);
         } else {
-          console.error(`WhatsApp failed: ${whatsappResult.message}`);
+          console.error(`❌ WhatsApp delivery failed: ${whatsappResult.message}`);
         }
       }
       

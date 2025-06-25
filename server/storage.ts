@@ -47,11 +47,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrder(insertOrder: InsertOrder): Promise<Order> {
-    const [order] = await db
-      .insert(orders)
-      .values(insertOrder)
-      .returning();
-    return order;
+    try {
+      const [order] = await db
+        .insert(orders)
+        .values(insertOrder)
+        .returning();
+      return order;
+    } catch (error) {
+      console.error('Database order creation error:', error);
+      throw new Error(`Failed to create order: ${error}`);
+    }
   }
 
   async getOrder(id: number): Promise<Order | undefined> {
