@@ -80,8 +80,8 @@ export interface CartItem {
     price: number;
   };
   insurance?: {
-    type: "comprehensive" | "theft" | "accidental";
-    price: number;
+    type: "comprehensive" | "theft" | "accidental_damage"; // removed the underscore
+    price: number | undefined;
   };
 }
 
@@ -95,7 +95,7 @@ export interface OrderItem {
     price: number;
   };
   insurance?: {
-    type: "comprehensive" | "theft" | "accidental";
+    type: "comprehensive" | "theft" | "accidental_damage"; // added the word 'damage'
     price: number;
   };
 }
@@ -103,7 +103,7 @@ export interface OrderItem {
 export interface RootQuoteRequest {
   productName: string;
   productValue: number;
-  coverageType: "comprehensive" | "theft" | "accidental";
+  coverageType: "comprehensive" | "theft" | "accidental_damage";
   customerInfo: {
     fullName: string;
     email: string;

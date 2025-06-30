@@ -5,6 +5,39 @@ import { insertOrderSchema, insertClaimSchema, type RootQuoteRequest, type RootP
 import { emailService } from "./email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Get insurance quoate from Root 
+  app.post("/api/getQuote", async (req, res) => {
+    const url = 'https://sandbox.rootplatform.com/v1/insurance/quotes?version=draft';
+
+    const options: RequestInit = {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic c2FuZGJveF9OREF3TldJNVl6QXRNek5sWkMwME1UTTNMV0kzTVRjdE1qVmpZbVkyWVRFM00yUmpMbWcwWTNkNE9YRnJhV2RQUzNWbFdGbHJkM2t5U0VKUVRXaDZPR1UzTmpoVjo='
+      },
+      body: JSON.stringify(req.body),
+    };
+
+    try {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      console.error("❌ Root API error:", await response.text());
+      return res.status(response.status).json({ error: "Failed to get quote from Root" });
+    }
+
+    const json = await response.json();
+    console.log("Quote Response:", json);
+    res.status(200).json(json);
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+    res.status(500).json({ error: "Failed to retrieve quote" });
+  }
+  });
+
+
   // Get all products
   app.get("/api/products", async (req, res) => {
     try {

@@ -18,10 +18,10 @@ export function Header({ onCartClick }: HeaderProps) {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/">
-              <h1 className="text-2xl font-bold text-slate-900 cursor-pointer">TechStore SA</h1>
+              <h1 className="text-2xl font-bold text-slate-900 cursor-pointer">Guardrisk Tech</h1>
             </Link>
             <Badge className="ml-2 bg-emerald-500 hover:bg-emerald-600 text-white">
-              with Root Insurance
+              with Insurance Coverage
             </Badge>
           </div>
           <div className="flex items-center space-x-4">

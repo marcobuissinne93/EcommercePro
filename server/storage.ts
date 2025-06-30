@@ -25,7 +25,12 @@ export interface IStorage {
 // Database Storage using Drizzle ORM
 export class DatabaseStorage implements IStorage {
   async getProducts(): Promise<Product[]> {
-    return await db.select().from(products);
+    try {
+      return await db.select().from(products);
+    } catch (error) {
+      console.error("❌ Error querying products:", error);
+      throw error; 
+    }
   }
 
   async getProduct(id: number): Promise<Product | undefined> {

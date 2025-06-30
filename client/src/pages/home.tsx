@@ -53,19 +53,25 @@ export default function Home() {
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white p-8 mb-8">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-bold mb-4">Premium Mobile Devices with Comprehensive Insurance</h2>
+            <h2 className="text-3xl font-bold mb-4">Premium Mobile Devices with additional insurance options</h2>
             <p className="text-blue-100 text-lg mb-6">
-              Protect your investment with Root Platform's innovative insurance solutions. Extended warranties and comprehensive coverage available.
+              Protect your investment with our insurance solutions. From extended warranties to comprehensive coverage.
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2">
               <Badge className="bg-white/10 hover:bg-white/20 text-white">
                 ✓ Instant Coverage
+              </Badge>
+              <Badge className="bg-white/10 hover:bg-white/20 text-white">
+                ✓ Comprehensive Insurance
               </Badge>
               <Badge className="bg-white/10 hover:bg-white/20 text-white">
                 ✓ Theft Protection
               </Badge>
               <Badge className="bg-white/10 hover:bg-white/20 text-white">
                 ✓ Accidental Damage
+              </Badge>
+              <Badge className="bg-white/10 hover:bg-white/20 text-white">
+                ✓ Extended Warranties
               </Badge>
             </div>
           </div>

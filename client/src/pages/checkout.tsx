@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Shield, Loader2 } from "lucide-react";
+import { ArrowLeft, Shield, Loader2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useCartStore } from "@/lib/cart-store";
 import { api } from "@/lib/api";
+
 
 const checkoutSchema = z.object({
   fullName: z.string().min(2, "Full name is required"),
@@ -32,6 +33,28 @@ const formatCurrency = (cents: number) => {
   return `R ${(cents / 100).toLocaleString()}`;
 };
 
+// const getInsuranceQuote = async () => {
+//   const response = await fetch("http://localhost:8000/api/getQuote", {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       type: "gr_device",
+//       devices: [{ device_type: "cellphone", value: 800000 }],
+//       cover_type: "comprehensive",
+//       excess: "R100",
+//       loaner_device: false,
+//       area_code: "0181",
+//       claims_history: "1",
+//       // url: 'https://sandbox.rootplatform.com/v1/insurance/quotes?version=draft'
+//     }),
+//   });
+
+//   const json = await response.json();
+//   console.log(JSON.stringify(json))
+//   return json;
+// };
+
+
 export default function Checkout() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -48,15 +71,22 @@ export default function Checkout() {
   const form = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
-      phone: "",
-      address: "",
-      postalCode: "",
+      fullName: "Marco",
+      email: "mbuissinne@gmail.com",
+      phone: "0833013000",
+      address: "689 Edwin Pretoria",
+      postalCode: "0181",
       country: "ZA",
       consent: false,
     },
   });
+
+  // {Device_type: ...,
+  //   replacement_value: ...ArrowLeft
+  //   cover_type: 'Comprehensive' | 'Theft-only' | 'Other',
+  //   excess: Number
+  //   pastClaims: ...ArrowLeft
+  // }
 
   const createOrderMutation = useMutation({
     mutationFn: async (data: CheckoutForm) => {
@@ -92,7 +122,7 @@ export default function Checkout() {
       if (hasInsurance && order.emailSent) {
         toast({
           title: "Order Placed Successfully!",
-          description: `Order #${order.id} created. Insurance payment links sent to ${data.email}. Check your email to complete setup.`,
+          description: `Order #${order.id} created. Insurance payment links sent to ${order.email}. Check your email to complete setup.`,
         });
       } else if (hasInsurance) {
         toast({
@@ -257,6 +287,7 @@ export default function Checkout() {
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700"
                   disabled={createOrderMutation.isPending}
+                  // onClick={getInsuranceQuote}
                 >
                   {createOrderMutation.isPending ? (
                     <>
@@ -286,7 +317,15 @@ export default function Checkout() {
                         <p className="text-sm text-slate-600">{item.warranty.type} warranty</p>
                       )}
                       {item.insurance && (
+                        <>
                         <p className="text-sm text-slate-600">{item.insurance.type} insurance</p>
+                        <div className="mt-3">
+                            <div className="flex space-x-2 text-xs text-slate-600">
+                              <ShieldAlert className="w-4 h-4 text-orange-500" />
+                              <span>Insurance link to be shared once the item(s) is purschased</span>
+                            </div>
+                        </div>
+                        </>
                       )}
                     </div>
                     <div className="text-right">
@@ -333,7 +372,7 @@ export default function Checkout() {
               <div className="mt-6 text-center">
                 <div className="flex items-center justify-center space-x-2 text-sm text-slate-600">
                   <Shield className="w-4 h-4 text-green-500" />
-                  <span>Secured by Root Platform</span>
+                  <span>Secured by Striper Payment Gateway</span>
                 </div>
               </div>
             </CardContent>

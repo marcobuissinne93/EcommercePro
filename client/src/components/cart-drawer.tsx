@@ -40,6 +40,13 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
     onCheckout();
   };
 
+  function formatLabel(input: string): string {
+  return input
+    .split("_")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-96">
@@ -68,7 +75,7 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
                       )}
                       {item.insurance && (
                         <p className="text-xs text-green-600">
-                          + {item.insurance.type} insurance (email payment link will be sent)
+                          + {formatLabel(item.insurance.type)} insurance (email payment link will be sent)
                         </p>
                       )}
                       
@@ -114,6 +121,9 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
                 >
                   Proceed to Checkout
                 </Button>
+                <div style={{'borderBottom': '5px'}}>
+
+                </div>
               </div>
             </>
           )}

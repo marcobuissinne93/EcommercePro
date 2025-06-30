@@ -5,6 +5,7 @@ import type { CartItem } from '@shared/schema';
 interface CartStore {
   items: CartItem[];
   addItem: (item: Omit<CartItem, 'id'>) => void;
+  getPrice: () => number;
   removeItem: (id: string) => void;
   updateItemWarranty: (id: string, warranty: CartItem['warranty']) => void;
   updateItemInsurance: (id: string, insurance: CartItem['insurance']) => void;
@@ -29,6 +30,10 @@ export const useCartStore = create<CartStore>()(
         set((state) => ({
           items: [...state.items, newItem]
         }));
+      },
+
+      getPrice: () => {
+        return get().items.filter(item => item.price)
       },
       
       removeItem: (id) => {
