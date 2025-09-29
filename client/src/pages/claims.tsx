@@ -13,15 +13,17 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { api } from "@/lib/api";
+import { l } from "node_modules/vite/dist/node/types.d-aGj9QkWt";
+// import { searchPolicyHolder } from "@/pages/checkout";
 
 const claimSchema = z.object({
-  imei: z.string().min(15, "IMEI must be 15 digits").max(15, "IMEI must be 15 digits"),
-  dateOfIncident: z.string().min(1, "Date of incident is required"),
-  description: z.string().min(10, "Please provide a detailed description (minimum 10 characters)"),
-  customerName: z.string().min(2, "Full name is required"),
-  customerEmail: z.string().email("Valid email is required"),
-  customerPhone: z.string().optional(),
+  email: z.string().min(3, "Email address is required").max(100, "Email address is required"),
+  incident_date: z.string().min(1, "Date of incident is required"),
+  incident_cause: z.string().min(10, "Please provide a detailed description (minimum 10 characters)"),
+  incident_type: z.string().min(4, "Please provide the cause of the incident, e.g., Accidental Damage"),
 });
+
+
 
 type ClaimForm = z.infer<typeof claimSchema>;
 
@@ -29,63 +31,177 @@ const formatCurrency = (cents: number) => {
   return `R ${(cents / 100).toLocaleString()}`;
 };
 
+const formatDateForInput = (value: string) => {
+  if (!value) return "";
+  return new Date(value).toISOString().split("T")[0];
+};
+
+const getPolicies = async (search: string): Promise<Record<string, string>[]> => {
+  console.log("The email address lookup value is:", search);
+  const response = await fetch(`http://localhost:8000/api/getClaimPolicies/${search}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to issue policy: ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  // console.log("Policy Issued:", JSON.stringify(result));
+  return result;
+};
+
+const createClaim = async (data: Record<string, any>): Promise<Record<string, string>> => {
+  const response = await fetch("http://localhost:8000/api/createClaim", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create claim: ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  // console.log("Policy Issued:", JSON.stringify(result));
+  return result;
+};
+
+
+const searchPolicyHolder = async (id_number: string): Promise<any[]> => {
+  const response = await fetch(`http://localhost:8000/api/searchPolicyHolder/${id_number}`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to create policyholder: ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  // console.log("Created policyholder:", JSON.stringify(result));
+  return result;
+};
+
+
 export default function Claims() {
   const [, setLocation] = useLocation();
-  const [deviceDetails, setDeviceDetails] = useState<any>(null);
-  const [imeiSearched, setImeiSearched] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [emailSearched, setEmailSearched] = useState(false);
+  const [policies, setPolicies] = useState<Record<string, any>[]>([]);
+  const [policySelected, setPolicySelected] = useState(false);
+  const [policyObj, setPolicyObj] = useState<Record<string, any>>();
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<ClaimForm>({
     resolver: zodResolver(claimSchema),
     defaultValues: {
-      imei: "",
-      dateOfIncident: "",
-      description: "",
-      customerName: "",
-      customerEmail: "",
-      customerPhone: "",
+      email: "mbuissinne2@gmail.com",
+      incident_type: "accidental_damage", // theft | accidental_damage 
+      incident_cause: "Long description of the claim etc....",
+      incident_date: "2025-07-09",
     },
   });
 
   const searchDeviceMutation = useMutation({
-    mutationFn: async (imei: string) => {
-      const response = await api.getProductByImei(imei);
-      return response.json();
+    mutationFn: async (email: string) => {
+      console.log("email in search is", email);
+      const response = await getPolicies(email);
+      // setEmail(email);
+      return response;
     },
-    onSuccess: (device) => {
-      setDeviceDetails(device);
-      setImeiSearched(true);
+
+    onSuccess: (policies) => {
+      setPolicies(policies);
+      setEmailSearched(true);
+      // setEmail(email);
+
       toast({
-        title: "Device Found",
-        description: `Found ${device.name} - ${device.description}`,
+        title: "Policies Found",
+        description: `Found ${policies.length} insurance policies`,
+        // variant: 'success',
       });
     },
     onError: () => {
-      setDeviceDetails(null);
-      setImeiSearched(true);
+      setPolicies([]);
+      setEmailSearched(true);
       toast({
         title: "Device Not Found",
-        description: "No device found with the provided IMEI number.",
+        description: "No device found with the provided email address.",
         variant: "destructive",
       });
     },
   });
 
+
+
   const createClaimMutation = useMutation({
     mutationFn: async (data: ClaimForm) => {
-      const response = await api.createClaim(data);
-      return response.json();
+      // console.log("emil is: ........", email);
+      const policholderDetails = await searchPolicyHolder(email);
+      console.log(JSON.stringify(policholderDetails));
+
+        console.log(JSON.stringify({
+        claimant: {
+                  first_name: policholderDetails[0].first_name,
+                  last_name: policholderDetails[0].first_name,
+                  email: email,
+                  cellphone: policholderDetails[0].cellphone
+              }
+      }));
+
+      console.log(JSON.stringify({
+          policy_id: policyObj?.policy_id,
+          incident_type: data.incident_type, // theft | accidental_damage 
+          incident_cause: data.incident_cause,
+          incident_date: data.incident_date,
+          app_data: {
+              key1: "",
+              key2: ""
+          },
+          claimant: {
+              first_name: policholderDetails[0].first_name,
+              last_name: policholderDetails[0].first_name,
+              email: email,
+              cellphone: policholderDetails[0].cellphone
+          },
+          requested_amount: policyObj?.module.devices.value
+      }));
+
+
+      const response = await createClaim({
+          policy_id: policyObj?.policy_id,
+          incident_type: data.incident_type, // theft | accidental_damage 
+          incident_cause: data.incident_cause,
+          incident_date: data.incident_date,
+          app_data: {
+              key1: "",
+              key2: ""
+          },
+          claimant: {
+              first_name: policholderDetails[0].first_name,
+              last_name: policholderDetails[0].first_name,
+              email: email,
+              cellphone: policholderDetails[0].cellphone
+          },
+          requested_amount: policyObj?.module.devices.value
+      });
+      return response;
     },
     onSuccess: (claim) => {
-      toast({
+      claim && toast({
         title: "Claim Submitted Successfully",
-        description: `Your claim #${claim.id} has been submitted and is under review.`,
+        description: `Your claim, number ${claim.claim_id} has been submitted.`,
+        variant: 'success',
       });
       form.reset();
-      setDeviceDetails(null);
-      setImeiSearched(false);
+      setPolicies([]);
+      setEmailSearched(false);
     },
     onError: (error) => {
+      console.log("the fucking error is: ", error);
       toast({
         title: "Claim Submission Failed",
         description: "There was an error submitting your claim. Please try again.",
@@ -94,40 +210,29 @@ export default function Claims() {
     },
   });
 
-  const handleImeiSearch = () => {
-    const imei = form.getValues("imei");
-    if (imei.length === 15) {
-      searchDeviceMutation.mutate(imei);
-    } else {
-      toast({
-        title: "Invalid IMEI",
-        description: "IMEI must be exactly 15 digits.",
-        variant: "destructive",
-      });
-    }
+  const handleEmailSearch = () => {
+    const email = form.getValues("email");
+    setEmail(email);
+    searchDeviceMutation.mutate(email);
+    setEmailSearched(false);
+    setPolicySelected(false);
+    setPolicies([]);
+    
   };
 
   const onSubmit = (data: ClaimForm) => {
-    if (!deviceDetails) {
-      toast({
-        title: "Device Verification Required",
-        description: "Please verify your device by searching with the IMEI number first.",
-        variant: "destructive",
-      });
-      return;
-    }
     createClaimMutation.mutate(data);
   };
 
-  const getWarrantyStatusBadge = (warrantyStatus: any) => {
-    if (!warrantyStatus) return null;
+  const getStatusBadge = (status: string) => {
+    if (!status) return null;
     
-    if (warrantyStatus.withinManufacturerWarranty) {
-      return <Badge className="bg-green-500 text-white">Within Manufacturer Warranty</Badge>;
-    } else if (warrantyStatus.withinExtendedWarranty) {
-      return <Badge className="bg-blue-500 text-white">Within Extended Warranty</Badge>;
+    if (status === 'active') {
+      return <Badge className="bg-green-500 text-white">{status}</Badge>;
+    } else if (status === 'pending_initial_payment') {
+      return <Badge className="bg-gray-300 text-black">{status}</Badge>;
     } else {
-      return <Badge className="bg-red-500 text-white">Warranty Expired</Badge>;
+      return <Badge className="bg-red-200 text-black">{status}</Badge>;
     }
   };
 
@@ -155,58 +260,80 @@ export default function Claims() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Smartphone className="w-5 h-5 mr-2" />
-                Device Verification
+                Insurance Selection
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="imei">IMEI Number *</Label>
+                  <Label htmlFor="imei">E-mail Address *</Label>
                   <div className="flex space-x-2">
                     <Input
-                      id="imei"
-                      {...form.register("imei")}
-                      placeholder="Enter 15-digit IMEI number"
-                      maxLength={15}
+                      id="email"
+                      {...form.register("email")}
+                      placeholder="Enter email address"
+                      maxLength={50}
                       className="flex-1"
                     />
                     <Button
                       type="button"
-                      onClick={handleImeiSearch}
+                      onClick={handleEmailSearch}
                       disabled={searchDeviceMutation.isPending}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      // className="bg-blue-600 hover:bg-blue-700"
+                      className="hover:bg-blue-700" style={{backgroundColor: "rgb(223, 101, 57)"}}
                     >
                       <Search className="w-4 h-4" />
                     </Button>
                   </div>
-                  {form.formState.errors.imei && (
-                    <p className="text-sm text-red-500">{form.formState.errors.imei.message}</p>
+                  {form.formState.errors.email && (
+                    <p className="text-sm text-red-500">{form.formState.errors.email.message}</p>
                   )}
                   <p className="text-xs text-slate-600">
-                    Find your IMEI by dialing *#06# on your device
+                    Email address is required to search your insurance policies.
                   </p>
                 </div>
+                
 
-                {imeiSearched && deviceDetails && (
-                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h4 className="font-medium text-green-900 mb-2">Device Details</h4>
-                    <div className="space-y-2 text-sm">
-                      <p><strong>Make & Model:</strong> {deviceDetails.name}</p>
-                      <p><strong>Description:</strong> {deviceDetails.description}</p>
-                      <p><strong>Purchase Price:</strong> {formatCurrency(deviceDetails.price)}</p>
-                      <p><strong>Purchase Date:</strong> {deviceDetails.purchaseDate}</p>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <strong>Warranty Status:</strong>
-                        {getWarrantyStatusBadge(deviceDetails.warrantyStatus)}
+                {emailSearched && policies && (
+                <div className="max-h-[500px] overflow-y-auto pr-2 space-y-4">
+                {/* apply a .filter here to filter on 'Device Cover' product */}
+                  {policies.map((policy, index) => {
+                    // console.log("The claim poicies are:".split, JSON.stringify(policy, null, 2));
+                    const handlePolicyClick = () => {
+                      // Example: Navigate to policy detail page with state
+                      setPolicyObj(policy);
+                      setPolicySelected(true);
+                    };
+
+                    return (
+                      <div
+                        key={index}
+                        className="mt-4 p-4 bg-white-50 border border-gray-200 rounded-lg transition-all duration-200 hover:bg-gray-100 hover:shadow-md cursor-pointer"
+                        onClick={handlePolicyClick}
+                      >
+                        <h4 className="font-medium text-green-900 mb-2">Policy Number: {policy.policy_number}</h4>
+                        <div className="space-y-2 text-sm">
+                          {policy.module.devices.map((device: Record<string, any>, i: number) => (
+                            <div key={i}>
+                              <p><strong>Make and Model:</strong> {device.make} {device.model}</p>
+                              <p><strong>Serial Number:</strong> {device.serial_number}</p>
+                              <p><strong>Sum Insured:</strong> {formatCurrency(device.value)}</p>
+                            </div>
+                          ))}
+                          <div><strong>Policy Start Date:</strong> {policy.start_date}</div>
+                          <div><strong>Policy Status:</strong> {getStatusBadge(policy.status)}</div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )}
+                    );
+                  })}
+                </div>
+              )}
 
-                {imeiSearched && !deviceDetails && (
+
+                {!emailSearched && !policyObj && emailSearched && (
                   <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                     <p className="text-sm text-red-700">
-                      Device not found. Please verify the IMEI number or contact support.
+                      No policies found. Please verify your email address and try again, or contact support.
                     </p>
                   </div>
                 )}
@@ -219,21 +346,51 @@ export default function Claims() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Calendar className="w-5 h-5 mr-2" />
-                Incident Details
+                Incident Details for Policy...
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
+                {emailSearched && policySelected && (
+                <>
+                       <div
+                        className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <h4 className="font-medium text-green-900 mb-2">Policy Number: {policyObj?.policy_number}</h4>
+                        <div className="space-y-2 text-sm">
+                          {policyObj?.module.devices.map((device: Record<string, any>, i: number) => (
+                            <div key={i}>
+                              <p><strong>Make and Model:</strong> {device.make} {device.model}</p>
+                              <p><strong>Serial Number:</strong> {device.serial_number}</p>
+                              <p><strong>Sum Insured:</strong> {formatCurrency(device.value)}</p>
+                            </div>
+                          ))}
+                          <div><strong>Policy Start Date:</strong> {policyObj?.start_date}</div>
+                          <div><strong>Status:</strong> {getStatusBadge(policyObj?.status)}</div>
+                        </div>
+                      </div>
+                 
+                </>
+              )}
+              <br></br>
+
+              <form
+                  onSubmit={(e) => {
+                    e.preventDefault(); // prevent actual submission
+                    setShowConfirmationModal(true); // show modal instead
+                  }}
+                  className="space-y-4"
+                >
                 <div className="space-y-2">
                   <Label htmlFor="dateOfIncident">Date of Incident *</Label>
-                  <Input
-                    id="dateOfIncident"
-                    type="date"
-                    {...form.register("dateOfIncident")}
-                    max={new Date().toISOString().split('T')[0]}
-                  />
-                  {form.formState.errors.dateOfIncident && (
-                    <p className="text-sm text-red-500">{form.formState.errors.dateOfIncident.message}</p>
+                    <Input
+                      id="dateOfIncident"
+                      type="date"
+                      value={formatDateForInput(form.watch("incident_date"))}
+                      onChange={(e) => form.setValue("incident_date", e.target.value)}
+                      max={new Date().toISOString().split("T")[0]}
+                    />
+                  {form.formState.errors.incident_date && (
+                    <p className="text-sm text-red-500">{form.formState.errors.incident_date.message}</p>
                   )}
                 </div>
 
@@ -241,57 +398,95 @@ export default function Claims() {
                   <Label htmlFor="description">Description of Incident *</Label>
                   <Textarea
                     id="description"
-                    {...form.register("description")}
+                    {...form.register("incident_cause")}
                     placeholder="Please provide a detailed description of what happened to your device..."
                     rows={4}
                   />
-                  {form.formState.errors.description && (
-                    <p className="text-sm text-red-500">{form.formState.errors.description.message}</p>
+                  {form.formState.errors.incident_cause && (
+                    <p className="text-sm text-red-500">{form.formState.errors.incident_cause.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="customerName">Full Name *</Label>
+                  <Label htmlFor="incident_type">Incident Type</Label>
                   <Input
-                    id="customerName"
-                    {...form.register("customerName")}
-                    placeholder="Enter your full name"
-                  />
-                  {form.formState.errors.customerName && (
-                    <p className="text-sm text-red-500">{form.formState.errors.customerName.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="customerEmail">Email Address *</Label>
-                  <Input
-                    id="customerEmail"
-                    type="email"
-                    {...form.register("customerEmail")}
-                    placeholder="Enter your email address"
-                  />
-                  {form.formState.errors.customerEmail && (
-                    <p className="text-sm text-red-500">{form.formState.errors.customerEmail.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="customerPhone">Phone Number (Optional)</Label>
-                  <Input
-                    id="customerPhone"
+                    id="incident_type"
                     type="tel"
-                    {...form.register("customerPhone")}
-                    placeholder="Enter your phone number"
+                    {...form.register("incident_type")}
+                    placeholder="Please provide the incident type"
                   />
                 </div>
 
-                <Button
+                {/* <Button
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700"
-                  disabled={createClaimMutation.isPending || !deviceDetails}
+                  disabled={createClaimMutation.isPending || !policies || !policySelected}
                 >
                   {createClaimMutation.isPending ? "Submitting Claim..." : "Submit Claim"}
+                </Button> */}
+                {/* <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => setShowConfirmationModal(true)} variant="default">
+                  Submit Claim
+                </Button> */}
+                <Button className="w-full hover:bg-blue-700" onClick={() => setShowConfirmationModal(true)} variant="default" style={{backgroundColor: "rgb(223, 101, 57)"}}>
+                  Submit Claim
                 </Button>
+                {showConfirmationModal && (
+                  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-[90%] max-w-md">
+                      <h3 className="text-lg font-semibold mb-4">Confirm Claim Submission</h3>
+                      <p className="mb-6 text-sm text-gray-700">
+                        Are you sure you want to submit this claim? See policy details below: 
+                      </p>
+                        <div
+                        className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                        <h4 className="font-medium text-green-900 mb-2">Policy Number: {policyObj?.policy_number}</h4>
+                        <div className="space-y-2 text-sm">
+                          {policyObj?.module.devices.map((device: Record<string, any>, i: number) => (
+                            <div key={i}>
+                              <p><strong>Make and Model:</strong> {device.make} {device.model}</p>
+                              <p><strong>Sum Insured:</strong> {formatCurrency(device.value)}</p>
+                            </div>
+                          ))}
+                          <h4 className="font-medium text-green-900 mb-2">Review claim details:</h4>
+                      
+                        </div>
+                      </div>
+                      <div
+                        className="mt-4 p-4 bg-blue-50 border border-gray-200 rounded-lg">
+                        <h4 className="font-medium text-green-900 mb-2">Review claim details:</h4>
+                        <div className="space-y-2 text-sm">
+              
+                          <div><strong>Incident Date:</strong> {form.watch('incident_date')}</div>
+                          <div><strong>Incident Cause:</strong> {form.watch("incident_cause")}</div>
+                          <div><strong>Incident Type:</strong> {form.watch("incident_type")}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end space-x-3" style={{"paddingTop": "22px"}}>
+                        <button
+                          onClick={() => setShowConfirmationModal(false)}
+                          className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-800"
+                        >
+                          Cancel
+                        </button>
+                
+                        <Button
+                          type="submit"
+                            onClick={async () => {
+                            setShowConfirmationModal(false);
+
+                            // Now perform the actual submission
+                            await form.handleSubmit(onSubmit)(); // <-- Call this manually
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700"
+                          disabled={createClaimMutation.isPending || !policies || !policySelected}
+                        >
+                          {createClaimMutation.isPending ? "Loading..." : "Submit Claim"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </form>
             </CardContent>
           </Card>
@@ -313,7 +508,7 @@ export default function Claims() {
               </div>
               <div>
                 <Smartphone className="w-8 h-8 mx-auto mb-2 text-purple-600" />
-                <h4 className="font-medium text-slate-900">Device Coverage</h4>
+                <h4 className="font-medium text-slate-900">Asset Coverage</h4>
                 <p className="text-sm text-slate-600">Comprehensive coverage for theft, damage, and technical issues</p>
               </div>
             </div>

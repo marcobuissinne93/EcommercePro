@@ -1,36 +1,43 @@
 import nodemailer from 'nodemailer';
 import type { OrderItem } from '@shared/schema';
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
 
-dotenv.config();
+// dotenv.config();
+
+const SMTP_HOST = 'smtp.gmail.com'
+const SMTP_PORT = '587'
+const SMTP_USER = 'mbuissinne@gmail.com'
+const SMTP_PASS = 'rlqbcrlokqafdnpi'
+const SMTP_SECURE = false
 
 export class EmailService {
   private transporter: nodemailer.Transporter;
 
   constructor() {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_HOST) {
+
+    if (!SMTP_USER || !SMTP_PASS || !SMTP_HOST) {
       throw new Error("Missing SMTP configuration in .env");
     }
 
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'false', // true for port 465, false for 587
+      host: SMTP_HOST,
+      port: 465, // parseInt(SMTP_PORT || '587'),
+      secure: true, //SMTP_SECURE === false, // true for port 465, false for 587 ----- Important: change this to 'false' (as string) when converting to process.ENV
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: SMTP_USER,
+        pass: SMTP_PASS,
       },
     });
   }
 
-  private generatePaymentLink(deviceName: string, insuranceType: string, monthlyAmount: number): string {
+  private generatePaymentLink(orderId: number, deviceName: string, insuranceType: string, monthlyAmount: number): string {
     const encodedDeviceName = encodeURIComponent(deviceName);
     const encodedInsuranceType = encodeURIComponent(insuranceType);
 
-    return `https://payments.techstore.co.za/debit-order?device=${encodedDeviceName}&insurance=${encodedInsuranceType}&amount=${monthlyAmount}&reference=${Date.now()}`;
+    return `http://localhost:8000/payments?orderId=${orderId}`;
   }
 
-  private createEmailContent(customerName: string, orderItems: OrderItem[]) {
+  private createEmailContent(orderId: number, customerName: string, orderItems: OrderItem[]) {
     const insuranceItems = orderItems.filter(item => item.insurance);
 
     if (insuranceItems.length === 0) {
@@ -47,7 +54,7 @@ export class EmailService {
       hasSelectedWarranty = (item.warranty?.type === '10-year' || item.warranty?.type === '5-year');
       console.log(JSON.stringify(item.warranty));
 
-      const paymentLink = this.generatePaymentLink(item.name, item.insurance!.type, item.insurance!.price);
+      const paymentLink = this.generatePaymentLink(orderId, item.name, item.insurance!.type, item.insurance!.price);
       html += `<div class="device-item"><h3>📱 ${item.name}</h3><p><strong>Coverage:</strong> ${item.insurance!.type}</p><p class="price">R${(item.insurance!.price / 100).toFixed(2)}/month</p><a href="${paymentLink}" class="payment-button">Setup Payment Authorization</a></div>`;
     });
 
@@ -56,7 +63,7 @@ export class EmailService {
     let text = `Guardrisk Tech - Device Insurance Setup\n\nHi ${customerName}!\n\nThank you for your purchase! To complete your device insurance setup, use the payment links below:\n\n`;
 
     insuranceItems.forEach(item => {
-      const paymentLink = this.generatePaymentLink(item.name, item.insurance!.type, item.insurance!.price);
+      const paymentLink = this.generatePaymentLink(orderId, item.name, item.insurance!.type, item.insurance!.price);
       text += `Device: ${item.name}\nCoverage: ${item.insurance!.type}\nMonthly Cost: R${(item.insurance!.price / 100).toFixed(2)}\nSetup Payment: ${paymentLink}\n\n`;
     });
 
@@ -66,19 +73,20 @@ export class EmailService {
   }
 
   async sendInsurancePaymentLinks(
+    orderId: number,
     customerName: string,
     customerEmail: string,
     orderItems: OrderItem[]
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const emailContent = this.createEmailContent(customerName, orderItems);
+      const emailContent = this.createEmailContent(orderId, customerName, orderItems);
 
       if (!emailContent.subject) {
         return { success: true, message: "No insurance items to process" };
       }
 
       const info = await this.transporter.sendMail({
-        from: `"Guardrisk Tech" <${process.env.SMTP_USER}>`,
+        from: `"Guardrisk Tech" <${SMTP_USER}>`,
         to: customerEmail,
         subject: emailContent.subject,
         html: emailContent.html,

@@ -21,15 +21,19 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
   const [insuranceModalOpen, setInsuranceModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const handleInsuranceClick = (productId: number, productName: string) => {
+  const handleInsuranceClick = (productId: number, productName: string, description: string, imei: string) => {
     const mockProduct: Product = {
-      id: productId,
+     id: productId,
       name: productName,
-      description: "",
+      description: "testing",
       price: 0,
       image: "",
-      imei: "",
-      purchaseDate: null
+      category: "test-category",
+      rating: "100",
+      imei: "000000000000000",
+      purchaseDate: "2024-01-01",
+      originalPrice: 0,
+      badge: null,
     };
     setSelectedProduct(mockProduct);
     setInsuranceModalOpen(true);
@@ -67,10 +71,10 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
                   <div key={item.id} className="flex items-center justify-between p-4 border-b">
                     <div className="flex-1">
                       <h4 className="font-medium text-slate-900">{item.name}</h4>
-                      <p className="text-sm text-slate-600">{formatCurrency(Math.round(item.price * 1.15))} VAT incl.</p>
+                      <p className="text-sm text-slate-600">{formatCurrency(Math.round(item.price))} VAT incl.</p>
                       {item.warranty && (
                         <p className="text-xs text-blue-600">
-                          + {item.warranty.type} warranty ({formatCurrency(Math.round(item.warranty.price * 1.15))} VAT incl.)
+                          + {item.warranty.type} warranty ({formatCurrency(Math.round(item.warranty.price))} VAT incl.)
                         </p>
                       )}
                       {item.insurance && (
@@ -83,7 +87,7 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleInsuranceClick(item.productId, item.name)}
+                          onClick={() => handleInsuranceClick(item.productId, item.name, item.description, item.imei)}
                           className="text-xs text-green-700 border-green-600 bg-green-50 hover:bg-green-100 hover:border-green-700 px-3 py-1 h-7 mt-2 font-medium"
                         >
                           <Shield className="w-3 h-3 mr-1" />
@@ -107,16 +111,23 @@ export function CartDrawer({ open, onOpenChange, onCheckout }: CartDrawerProps) 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal (VAT incl.):</span>
-                    <span>{formatCurrency(Math.round((getSubtotal() + getWarrantyTotal()) * 1.15))}</span>
+                    <span>{formatCurrency(Math.round((getSubtotal() + getWarrantyTotal())))}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t pt-2">
                     <span>Total:</span>
-                    <span>{formatCurrency(Math.round((getSubtotal() + getWarrantyTotal()) * 1.15))}</span>
+                    <span>{formatCurrency(Math.round((getSubtotal() + getWarrantyTotal())))}</span>
                   </div>
                 </div>
-                <Button 
+                {/* <Button 
                   onClick={handleCheckout}
                   className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={items.length === 0}
+                >
+                  Proceed to Checkout
+                </Button> */}
+                <Button 
+                  onClick={handleCheckout}
+                  className="w-full hover:bg-blue-700" style={{background: "rgb(223, 101, 57)"}}
                   disabled={items.length === 0}
                 >
                   Proceed to Checkout

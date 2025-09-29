@@ -37,8 +37,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const addItem = useCartStore((state) => state.addItem);
 
-  const calculate5YearWarranty = () => Math.round(product.price * 0.07);
-  const calculate10YearWarranty = () => Math.round(product.price * 0.15);
+  const calculate5YearWarranty = () => Math.round(product.price * 0.03);
+  const calculate10YearWarranty = () => Math.round(product.price * 0.05);
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -56,14 +56,18 @@ export function ProductCard({ product }: ProductCardProps) {
       };
     }
 
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      warranty,
-    });
-
+      addItem({
+        productId: product.id,
+        name: product.name,
+        description: product.description, // product.description,  // added
+        imei: product.imei,
+        price: product.price + (warranty?.price ?? 0),
+        image: product.image,
+        warranty: warranty,
+        
+        // insurance,
+      });
+      // updateItemWarranty(product.id, warranty);
     // Show success feedback
     setTimeout(() => setIsAdding(false), 1000);
   };
@@ -77,7 +81,11 @@ export function ProductCard({ product }: ProductCardProps) {
       />
       <CardContent className="p-4">
         <div className="flex items-start justify-between mb-2">
-          <h4 className="font-semibold text-slate-900">{product.name}</h4>
+          {/* <h4 className="font-semibold text-slate-900">{product.name}</h4> */}
+          <h4 className="font-semibold text-slate-900 min-h-[3rem] line-clamp-2">
+            {product.name}
+          </h4>
+
           {/* {product.badge && (
             <Badge className={`${getBadgeColor(product.badge)} text-white text-xs px-2 py-1`}>
               {product.badge}
@@ -95,7 +103,7 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
             )}
             <span className="text-2xl font-bold text-slate-900">
-              {formatCurrency(Math.round(product.price * 1.15))}
+              {formatCurrency(Math.round(product.price))}
             </span>
             <span className="text-xs text-slate-500 ml-2">VAT incl.</span>
           </div>
@@ -114,21 +122,28 @@ export function ProductCard({ product }: ProductCardProps) {
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="5-year" id={`warranty-5-${product.id}`} />
               <Label htmlFor={`warranty-5-${product.id}`} className="text-xs">
-                5-year warranty (+{formatCurrency(Math.round(calculate5YearWarranty() * 1.15))})
+                5-year warranty (+{formatCurrency(Math.round(calculate5YearWarranty()))})
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="10-year" id={`warranty-10-${product.id}`} />
               <Label htmlFor={`warranty-10-${product.id}`} className="text-xs">
-                10-year warranty (+{formatCurrency(Math.round(calculate10YearWarranty() * 1.15))})
+                10-year warranty (+{formatCurrency(Math.round(calculate10YearWarranty()))})
               </Label>
             </div>
           </RadioGroup>
         </div>
 
-        <Button 
+        {/* <Button 
           onClick={handleAddToCart}
           className="w-full bg-blue-600 text-white hover:bg-blue-700"
+          disabled={isAdding}
+        >
+          {isAdding ? "Added!" : "Add to Cart"}
+        </Button> */}
+        <Button 
+          onClick={handleAddToCart}
+          className="w-full text-white hover:bg-blue-700" style = {{backgroundColor: "rgb(223, 101, 57)"}}
           disabled={isAdding}
         >
           {isAdding ? "Added!" : "Add to Cart"}

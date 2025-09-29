@@ -7,7 +7,9 @@ export const api = {
   createQuote: (data: any) => apiRequest("POST", "/api/quote", data),
   createPolicy: (data: any) => apiRequest("POST", "/api/policy", data),
   createOrder: (data: any) => apiRequest("POST", "/api/orders", data),
-  getOrder: (id: number) => apiRequest("GET", `/api/orders/${id}`),
+  insertInsurance: (data: any) => apiRequest("POST", "/api/insertInsurance", data),
+  insertPolicyholder: (data: any) => apiRequest("POST", "/api/insertPolicyHolder", data),
+  getOrder: (id: number | null) => apiRequest("GET", `/api/orders/${id}`),
   createClaim: (data: any) => apiRequest("POST", "/api/claims", data),
   getClaims: () => apiRequest("GET", "/api/claims"),
 };

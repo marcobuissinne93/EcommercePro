@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -13,6 +13,7 @@ interface InsuranceModalProps {
   onOpenChange: (open: boolean) => void;
   product: Product | null;
 }
+
 
 const getInsuranceQuote = async (cover_type: string, price: number) => {
   const response = await fetch("http://localhost:8000/api/getQuote", {
@@ -89,7 +90,32 @@ export function InsuranceModal({ open, onOpenChange, product }: InsuranceModalPr
   const [termsAccepted, setTermsAccepted] = useState(false);
   const { items, addItem, updateItemInsurance, getPrice } = useCartStore();
   const [showQuotePrice, setShowQuotePrice] = useState(false);
-  // const [open, setOpen] = useState(false);
+  const [quotePackageId, setQuotePackageId] = useState<string>("");
+  const [quotePackageIds, setQuotePackageIds] = useState<Array<string>>([]);
+  // console.log(`THE PRODUCT DESC IS ${product?.description}`)
+
+  console.log(`$Storage is equal to : ${localStorage.getItem("quote_package_id")}`);
+
+  useEffect(() => {
+    if (quotePackageId) {
+      console.log("quote_package_id state updated:", quotePackageId);
+
+      const stored = localStorage.getItem("quote_package_id");
+
+      try {
+        const parsed = stored ? new Set<string>(JSON.parse(stored)) : new Set<string>();
+        parsed.add(quotePackageId); // Set automatically deduplicates
+
+        const updated = Array.from(parsed);
+        localStorage.setItem("quote_package_id", JSON.stringify(updated));
+        setQuotePackageIds(updated);
+        console.log(updated);
+      } catch (err) {
+        console.error("Failed to parse localStorage item:", err);
+      }
+    }
+  }, [quotePackageId]);
+
 
   const handleClose = (isOpen: boolean) => {
     if (!isOpen) {
@@ -109,7 +135,8 @@ export function InsuranceModal({ open, onOpenChange, product }: InsuranceModalPr
 
     const insurance = {
       type: insuranceOption.type,
-      price: quoteValue //insuranceOption.price, 
+      price: quoteValue, //insuranceOption.price, 
+      quote_package_id: quotePackageId
     };
 
     // Check if product is already in cart
@@ -123,6 +150,8 @@ export function InsuranceModal({ open, onOpenChange, product }: InsuranceModalPr
       addItem({
         productId: product.id,
         name: product.name,
+        description: "testing", // product.description,  // added
+        imei: product.imei,
         price: product.price,
         image: product.image,
         insurance,
@@ -135,6 +164,7 @@ export function InsuranceModal({ open, onOpenChange, product }: InsuranceModalPr
     onOpenChange(false);
     handleClose(false);
   };
+
 
   const canAddInsurance = selectedInsurance && termsAccepted;
 
@@ -149,21 +179,6 @@ export function InsuranceModal({ open, onOpenChange, product }: InsuranceModalPr
           <p className="text-slate-600">
             Protect your device with comprehensive insurance coverage.
           </p>
-          
-          {/* <RadioGroup value={selectedInsurance} onValueChange={setSelectedInsurance}>
-            {insuranceOptions.map((option) => (
-              <div key={option.type} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-slate-50">
-                <RadioGroupItem value={option.type} id={option.type} className="mt-1" />
-                <Label htmlFor={option.type} className="flex-1 cursor-pointer">
-                  <div className="font-medium text-slate-900">{option.name}</div>
-                  <div className="text-sm text-slate-600">{option.description}</div>
-                  <div className="text-sm font-medium text-blue-600">
-                    From {formatCurrency(option.price)}/month via debit order
-                  </div>
-                </Label>
-              </div>
-            ))}
-          </RadioGroup> */}
           <RadioGroup
             value={selectedInsurance}
             onValueChange={async (value) => {
@@ -172,11 +187,7 @@ export function InsuranceModal({ open, onOpenChange, product }: InsuranceModalPr
                   setSelectedInsurance(value);
 
                   try {
-                    // const item = useCartStore.getState().items[0]; // or wherever you get the item
-                    // items.map((item) => return items.filter(item.id === selectedProductId));
-                    // console.log(`The price is: ${product?.price}`);
-
-                    // Working and pulling through the correct price of each product
+                 // Working and pulling through the correct price of each product
                     let price: number = 0;
                     items.map((item) => { 
                       console.log(`${item.productId} === ${selectedProductId}`)
@@ -184,16 +195,20 @@ export function InsuranceModal({ open, onOpenChange, product }: InsuranceModalPr
                           price = item.price;
                       };
                     })
-                    // items.map((item) => {
-                    //   console.log(item);
-                    // });
 
                     const quote = await getInsuranceQuote(value, price);
-                    setQuoteValue(quote?.[0]?.base_premium); // ✅ Now the actual quote is stored
+                    setQuoteValue(quote?.[0]?.base_premium); // 
+                    setQuotePackageId(quote?.[0]?.quote_package_id);
+
                     console.log(quote?.[0]?.base_premium);
+                    console.log(`${quote?.[0]?.quote_package_id} :: ${quotePackageId}`);
+                    
                   } catch (err) {
                     console.error("Failed to fetch quote:", err);
                   }
+
+                  
+
                 }}
           >
             {insuranceOptions.map((option) => (

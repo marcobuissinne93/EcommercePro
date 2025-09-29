@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
+import logo from "../assets/logo.svg";
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -51,28 +52,48 @@ export default function Home() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl text-white p-8 mb-8">
+        <div className="bg-gradient-to-r from-gray-200 to-gray-300 rounded-xl text-black p-8 mb-8">
           <div className="max-w-3xl">
-            <h2 className="text-3xl font-bold mb-4">Premium Mobile Devices with additional insurance options</h2>
-            <p className="text-blue-100 text-lg mb-6">
+            {/* <h2 className="text-3xl font-bold mb-4">
+              Premium Mobile Devices with additional insurance options underwritten by 
+              <img src={logo} alt="Guardrisk Logo" className="inline-block ml-2 h-8" />
+            </h2> */}
+            <h2 className="text-3xl font-bold mb-4">
+              Premium Hunting Gear with additional insurance options underwritten by 
+              <img src={logo} alt="Guardrisk Logo" className="inline-block ml-2 h-8" />
+            </h2>
+            <p className="text-black-100 text-lg mb-6">
               Protect your investment with our insurance solutions. From extended warranties to comprehensive coverage.
             </p>
             <div className="flex flex-wrap gap-2">
-              <Badge className="bg-white/10 hover:bg-white/20 text-white">
+              {/* takealot badges */}
+              {/* <Badge className="bg-blue-600 hover:bg-blue-700 text-white">
                 ✓ Instant Coverage
               </Badge>
-              <Badge className="bg-white/10 hover:bg-white/20 text-white">
+              <Badge className="bg-blue-600 hover:bg-blue-700 text-white">
                 ✓ Comprehensive Insurance
               </Badge>
-              <Badge className="bg-white/10 hover:bg-white/20 text-white">
+              <Badge className="bg-blue-600 hover:bg-blue-700 text-white">
                 ✓ Theft Protection
               </Badge>
-              <Badge className="bg-white/10 hover:bg-white/20 text-white">
+              <Badge className="bg-blue-600 hover:bg-blue-700 text-white">
+                ✓ Accidental Damage
+              </Badge> */}
+              <Badge className="hover:bg-blue-700 text-white" style={{ backgroundColor: "rgb(223, 101, 57)" }}>
+                ✓ Instant Coverage
+              </Badge>
+              <Badge className="hover:bg-blue-700 text-white" style={{ backgroundColor: "rgb(223, 101, 57)" }}>
+                ✓ Comprehensive Insurance
+              </Badge>
+              <Badge className="hover:bg-blue-700 text-white" style={{ backgroundColor: "rgb(223, 101, 57)" }}>
+                ✓ Theft Protection
+              </Badge>
+              <Badge className="hover:bg-blue-700 text-white" style={{ backgroundColor: "rgb(223, 101, 57)" }}>
                 ✓ Accidental Damage
               </Badge>
-              <Badge className="bg-white/10 hover:bg-white/20 text-white">
+              {/* <Badge className="bg-white/10 hover:bg-white/20 text-white">
                 ✓ Extended Warranties
-              </Badge>
+              </Badge> */}
             </div>
           </div>
         </div>
@@ -112,17 +133,28 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-bold mb-4">TechStore SA</h3>
+              {/* <h3 className="text-lg font-bold mb-4">Takealot</h3> */}
+              <h3 className="text-lg font-bold mb-4">Safari Outdoor</h3>
+              {/* <p className="text-slate-300 text-sm">
+                Premium mobile devices with comprehensive insurance coverage through Guardrisk.
+              </p> */}
               <p className="text-slate-300 text-sm">
-                Premium mobile devices with comprehensive insurance coverage through Root Platform.
+                Premium hunting gear with comprehensive insurance coverage through Guardrisk.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-4">Products</h4>
-              <ul className="space-y-2 text-sm text-slate-300">
+              {/* <ul className="space-y-2 text-sm text-slate-300">
                 <li><a href="#" className="hover:text-white">Smartphones</a></li>
                 <li><a href="#" className="hover:text-white">Tablets</a></li>
                 <li><a href="#" className="hover:text-white">Laptops</a></li>
+                <li><a href="#" className="hover:text-white">Accessories</a></li>
+              </ul> */}
+              <ul className="space-y-2 text-sm text-slate-300">
+                <li><a href="#" className="hover:text-white">Rifles</a></li>
+                <li><a href="#" className="hover:text-white">Ammunition</a></li>
+                <li><a href="#" className="hover:text-white">Opticals</a></li>
+                <li><a href="#" className="hover:text-white">Camo Gear</a></li>
                 <li><a href="#" className="hover:text-white">Accessories</a></li>
               </ul>
             </div>
@@ -146,7 +178,8 @@ export default function Home() {
             </div>
           </div>
           <div className="border-t border-slate-700 mt-8 pt-8 text-center text-sm text-slate-400">
-            <p>&copy; 2024 TechStore SA. All rights reserved. Insurance provided by Root Platform.</p>
+            {/* <p>&copy; 2025 Takealot SA. All rights reserved. Insurance underwritten by Guardrisk.</p> */}
+            <p>&copy; 2025 Safari Outdoor. All rights reserved. Insurance underwritten by Guardrisk.</p>
           </div>
         </div>
       </footer>

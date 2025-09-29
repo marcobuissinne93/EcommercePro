@@ -1,14 +1,28 @@
+console.log("⏱ Script started");
+import dotenv from 'dotenv';
+dotenv.config();
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import dotenv from 'dotenv';
+import cors from 'cors';
 
-dotenv.config();
+// process.env.DATABASE_URL = "hardcoded_test_value";
+// console.log("Hardcoded:", process.env.DATABASE_URL);
+console.log(process.env.DATABASE_URL);
 
 const app = express();
+
+// Configure CORS
+const corsOptions = {
+  origin: ['http://127.0.0.1:8000', 'http://localhost:8000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;

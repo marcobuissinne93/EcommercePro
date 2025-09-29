@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Checkout from "@/pages/checkout";
 import Claims from "@/pages/claims";
 import NotFound from "@/pages/not-found";
+import Payments from "@/pages/payments";
 
 function Router() {
   return (
@@ -14,6 +15,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/claims" component={Claims} />
+      <Route path="/payments" component={Payments} />
       <Route component={NotFound} />
     </Switch>
   );

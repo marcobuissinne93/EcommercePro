@@ -1,6 +1,6 @@
 import { products, orders, claims, type Product, type InsertProduct, type Order, type InsertOrder, type Claim, type InsertClaim } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, gt, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Products
@@ -14,6 +14,10 @@ export interface IStorage {
   getOrder(id: number): Promise<Order | undefined>;
   updateOrderStatus(id: number, status: string, rootPolicyIds?: string[]): Promise<Order | undefined>;
   
+  //Insurance
+  updateInsurancePolicies(id: number, rootPolicyIds?: string[]): Promise<Order | undefined>; // added
+  insertPolicyHolderId(id: number, policyHolderId: string): Promise<Order | undefined>;
+
   // Claims
   createClaim(claim: InsertClaim): Promise<Claim>;
   getClaim(id: number): Promise<Claim | undefined>;
@@ -26,7 +30,8 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   async getProducts(): Promise<Product[]> {
     try {
-      return await db.select().from(products);
+      return await db.select().from(products).where(gt(products.id, 10)).orderBy(desc(products.price)); // Outdoor Warehouse specific
+      // return await db.select().from(products);
     } catch (error) {
       console.error("❌ Error querying products:", error);
       throw error; 
@@ -69,17 +74,40 @@ export class DatabaseStorage implements IStorage {
     return order || undefined;
   }
 
-  async updateOrderStatus(id: number, status: string, rootPolicyIds?: string[]): Promise<Order | undefined> {
+  async updateOrderStatus(id: number, status: string, rootPolicyIds?: string[], applicationIds?: string[]): Promise<Order | undefined> {
     const [order] = await db
       .update(orders)
       .set({ 
         status, 
-        rootPolicyIds: rootPolicyIds || null 
+        rootPolicyIds: [],
+        applicationIds: applicationIds || [],
       })
       .where(eq(orders.id, id))
       .returning();
     return order || undefined;
   }
+
+    async updateInsurancePolicies(id: number, rootPolicyIds?: string[]): Promise<Order | undefined> {
+    const [policy] = await db
+      .update(orders)
+      .set({ 
+        rootPolicyIds: rootPolicyIds || [],
+      })
+      .where(eq(orders.id, id))
+      .returning();
+    return policy || undefined;
+  };
+
+    async insertPolicyHolderId(id: number, policyHolderId: string): Promise<Order | undefined> {
+    const [policy] = await db
+      .update(orders)
+      .set({ 
+        policyHolderId: policyHolderId
+      })
+      .where(eq(orders.id, id))
+      .returning();
+    return policy || undefined;
+  };
 
   async createClaim(insertClaim: InsertClaim): Promise<Claim> {
     const [claim] = await db

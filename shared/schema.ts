@@ -31,7 +31,9 @@ export const orders = pgTable("orders", {
   total: integer("total").notNull(),
   status: text("status").notNull().default("pending"),
   items: json("items").$type<OrderItem[]>().notNull(),
-  rootPolicyIds: json("root_policy_ids").$type<string[]>(),
+  rootPolicyIds: json("root_policy_ids").$type<string[]>().notNull().default([]),
+  applicationIds: json("application_ids").$type<string[]>().notNull().default([]),
+  policyHolderId: text("policy_holder_id").default('')
 });
 
 export const claims = pgTable("claims", {
@@ -54,6 +56,16 @@ export const insertOrderSchema = createInsertSchema(orders).omit({
   id: true,
   status: true,
   rootPolicyIds: true,
+  // imei: true, 
+  // description: true
+});
+
+export const insertPolicySchema = createInsertSchema(orders).omit({
+  id: true,
+});
+
+export const insurtPolicyHolderSchema = createInsertSchema(orders).omit({
+  id: true,
 });
 
 export const insertClaimSchema = createInsertSchema(claims).omit({
@@ -66,6 +78,8 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
+export type InsertPolicy = z.infer<typeof insertPolicySchema>; // added
+export type insertPolicyHolderSchema = z.infer<typeof insurtPolicyHolderSchema>; // added
 export type Claim = typeof claims.$inferSelect;
 export type InsertClaim = z.infer<typeof insertClaimSchema>;
 
@@ -73,6 +87,8 @@ export interface CartItem {
   id: string;
   productId: number;
   name: string;
+  description: string, // added this line - yet to test (removed the ? )
+  imei: string, 
   price: number;
   image: string;
   warranty?: {
@@ -82,12 +98,15 @@ export interface CartItem {
   insurance?: {
     type: "comprehensive" | "theft" | "accidental_damage"; // removed the underscore
     price: number | undefined;
+    quote_package_id? : string | undefined //quotePackageId
   };
 }
 
 export interface OrderItem {
   productId: number;
   name: string;
+  description: string, // added this line - yet to test (removed the ? )
+  imei: string, 
   price: number;
   image: string;
   warranty?: {
